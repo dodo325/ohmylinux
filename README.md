@@ -1,2 +1,17 @@
-# ohmylinux
-setting up your linux is easy!
+# Oh my Linux!
+Setting up your linux is easy!
+
+Переименоваль проект в LPIW (Linux Post Installtion-Wizard) или нет...
+
+# Идея алгоритма:
+
+1. Он прозодит по всем папкам в scripts
+2. Формирует список с именами и описанием 
+3. Делает меню
+4. [пользователь] выбирает что ему надо
+5. Разбираемся с зависимостями
+6. Собираем
+   1. Сначала logs.sh
+   2. sysinfo.sh
+   3. потом по порядку скрипты
+7. 
