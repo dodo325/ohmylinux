@@ -31,11 +31,10 @@ CURRENT_DESKTOP=$(echo "$XDG_CURRENT_DESKTOP" | grep -Eoi 'xfce|kde|gnome|unity'
 CURRENT_DESKTOP=$(echo "$CURRENT_DESKTOP" | sed -e 's/\(.*\)/\L\1/')
 CURRENT_TERM=$(which_term)
 
-main() {
-    echo "term: $CURRENT_TERM";
-    echo "DE: $CURRENT_DESKTOP";
-}
-
-if [ "${1}" != "--source-only" ]; then
-    main "${@}"
-fi
+main() {                                # skip
+    echo "term: $CURRENT_TERM";         # skip
+    echo "DE: $CURRENT_DESKTOP";        # skip
+}                                       # skip
+if [ "${1}" != "--source-only" ]; then  # skip
+    main "${@}"                         # skip
+fi                                      # skip

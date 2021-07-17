@@ -21,18 +21,17 @@ function _ti(){ # FIXME: не работает!
 
 log_info()    { echo -e "$_lb($(date +"%T.%3N"))[INFO] $@ $_e"; }
 log_success() { echo -e "$_lg($(date +"%T.%3N"))[ OK ] $@ $_e"; }
-log_warning() { echo -e "$_ly($(date +"%T.%3N"))[warn] $@ $_e"; }
+log_warning() { echo -e "$_ly($(date +"%T.%3N"))[WARN] $@ $_e"; }
 log_debug()   { echo -e "$_ld($(date +"%T.%3N"))[    ] $@ $_e"; }
 log_error()   { echo -e "$_lr($(date +"%T.%3N"))[FAIL] $@ $_e"; }
 
-main() {
-    log_info "info"
-    log_success "success"
-    log_warning "warning"
-    log_debug "debug"
-    log_error "error"
-}
-
-if [ "${1}" != "--source-only" ]; then
-    main "${@}"
-fi
+main() {                               # skip
+    log_info "info"                    # skip
+    log_success "success"              # skip
+    log_warning "warning"              # skip
+    log_debug "debug"                  # skip
+    log_error "error"                  # skip
+}                                      # skip
+if [ "${1}" != "--source-only" ]; then # skip
+    main "${@}"                        # skip
+fi                                     # skip
