@@ -13,4 +13,16 @@ test_initial_build_directory(){
   assertTrue "[ -f '$BUILD_SCRIPT' ]"
 }
 
+test_1() {
+  arr=()
+
+  arr+=("ab")
+  arr+=("abc")
+  arr+=("abcd")
+
+  echo "ee = ${arr[@]}"
+
+  assertTrue true
+}
+
 . ./shunit2/shunit2

@@ -11,16 +11,46 @@
 SCRIPTPATH="$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )"
 . $SCRIPTPATH/lib/logs.sh --source-only
 . $SCRIPTPATH/lib/sysinfo.sh --source-only
+. $SCRIPTPATH/lib/tools.sh
 
 BUILD_DIRECTORY=$SCRIPTPATH/build/
 BUILD_SCRIPT=$BUILD_DIRECTORY/install.sh
 
-declare -A scripts_directory_array;
-declare -A scripts_files;
-declare -A scripts_names;
-declare -A scripts_description;
+# declare -A scripts_directory_array=();
+scripts_directory_array=();
+declare -A scripts_files=();
+declare -A scripts_names=();
+declare -A scripts_description=();
 
-declare -A selected_scripts;
+# declare -A selected_scripts=();
+selected_scripts=();
+
+graph=();
+visits=();
+stack=();
+
+# BFS=() {
+#     local v=$1;
+#     visited[v]=true;
+#     for i in "${graph[v]}"; do
+#         if [ "${visited[i]}" = true ]; then
+#             BFS $i;
+#         fi
+#     done
+
+#     stack+=("$v")
+# }
+
+topological_sport() {
+    # initial array
+    for v in "${V[@]}"; do
+        visited[v]=false;
+    done
+
+    stack=()
+    BFS $1; # вызываем bfs из конкретной вершины 
+}
+
 
 _checklist=;
 
@@ -48,7 +78,8 @@ parse_config_file(){
     scripts_files[$2]=${metadata[file]};
     scripts_description[$2]=${metadata[description]};
     scripts_names[$2]=${metadata[name]};
-
+    graph[$2]="${metadata[requires]}";
+    log_warning "requires [$2] = ${metadata[requires]}";
     log_success "name = ${metadata[name]}";
     log_success "description = ${metadata[description]}";
     log_success "file = ${metadata[file]}";
@@ -65,8 +96,9 @@ detect_scripts_directories() {
                 continue
             fi
             local dir_name=$(basename $f)
-            # scripts_directory_array+=($dir_name); # FIXME: ляя
-            scripts_directory_array[$dir_name]=$dir_name;
+            scripts_directory_array+=($dir_name); # FIXME: ляя
+            # scripts_directory_array=("${scripts_directory_array[@]}" "$dir_name")
+            # scripts_directory_array[$dir_name]=$dir_name;
 
             parse_config_file $info_file_path $dir_name
             # а тут мы их используем
@@ -97,8 +129,9 @@ parse_checklist_output() {
         tmp="${el%\"}"
         tmp="${tmp#\"}"
         echo "-- tmp: $tmp";
-        selected_scripts[$tmp]=$tmp;
-        # selected_scripts+=($tmp ); #TODOL что-то тут не так
+        # selected_scripts[$tmp]=$tmp;
+        # selected_scripts=("${selected_scripts[@]}" $tmp)
+        selected_scripts+=($tmp); #TODOL что-то тут не так
     done
 }
 
@@ -155,6 +188,7 @@ ask_start_script() {
     fi
 }
 
+
 main() {
     detect_scripts_directories;
     OUTPUT=$(whiptail --checklist "Please pick one" 10 60 4 $_checklist  3>&2 2>&1 1>&3 )
@@ -183,6 +217,11 @@ main() {
     #     three three off four four off  five five off
     
     ask_start_script;
+
+    # update_graph;
+
+    for K in "${!graph[@]}"; do echo $K --- ${graph[$K]}; done
+
 }
 
 if [ "${1}" != "--source-only" ]; then
