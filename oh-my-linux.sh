@@ -22,33 +22,45 @@ declare -A scripts_files=();
 declare -A scripts_names=();
 declare -A scripts_description=();
 
+declare -A requires=();
+
+declare -A visited=();
+# declare -A stack=();
+stack=();
+
 # declare -A selected_scripts=();
 selected_scripts=();
 
-graph=();
-visits=();
-stack=();
 
-# BFS=() {
-#     local v=$1;
-#     visited[v]=true;
-#     for i in "${graph[v]}"; do
-#         if [ "${visited[i]}" = true ]; then
-#             BFS $i;
-#         fi
-#     done
-
-#     stack+=("$v")
-# }
-
-topological_sport() {
-    # initial array
-    for v in "${V[@]}"; do
-        visited[v]=false;
+BFS() {
+    local v=$1;
+    log_warning "Start BFS in '$v'"
+    visited[$v]=true;
+    local graph=(${requires[$v]})
+    for i in "${graph[@]}"; do
+        echo "- i = $i"
+        if [ "${visited[$i]}" = false ]; then
+            BFS $i;
+        fi
     done
 
+    stack+=("$v")
+}
+
+topological_sort() {
+    log_info "Start topological_sort"
+#     # initial array
+    visited=()
     stack=()
-    BFS $1; # вызываем bfs из конкретной вершины 
+
+    for v in "${scripts_directory_array[@]}"; do
+        visited[$v]=false;
+    done
+
+    for vv in "${selected_scripts[@]}"; do
+        BFS $vv;
+    done
+#     # вызываем bfs из конкретной вершины 
 }
 
 
@@ -78,11 +90,12 @@ parse_config_file(){
     scripts_files[$2]=${metadata[file]};
     scripts_description[$2]=${metadata[description]};
     scripts_names[$2]=${metadata[name]};
-    graph[$2]="${metadata[requires]}";
-    log_warning "requires [$2] = ${metadata[requires]}";
-    log_success "name = ${metadata[name]}";
-    log_success "description = ${metadata[description]}";
-    log_success "file = ${metadata[file]}";
+    requires[$2]=${metadata[requires]};
+    
+    log_debug "name = ${metadata[name]}";
+    log_debug "description = ${metadata[description]}";
+    log_debug "file = ${metadata[file]}";
+    log_debug "requires [$2] = ${metadata[requires]}";
     # тут мы объявляем переменные
 }
 
@@ -148,6 +161,9 @@ initial_build_directory() {
 
 build_script() {
     initial_build_directory;
+
+    # Обновляем зависимости
+
     # _scripts= $@
 
     # Для каждого файла мы обрезаем контент 
@@ -155,8 +171,8 @@ build_script() {
         append_script_file_to_build $sfile;
     done
 
-    for name in "${selected_scripts[@]}"; do # 
-        log_info "name = $name"
+    for name in "${stack[@]}"; do # 
+        log_info "Add script = $name"
         local script_file=$SCRIPTPATH/scripts/$name/${scripts_files[$name]}
         log_info "script_file = $script_file"
 
@@ -191,16 +207,19 @@ ask_start_script() {
 
 main() {
     detect_scripts_directories;
-    OUTPUT=$(whiptail --checklist "Please pick one" 10 60 4 $_checklist  3>&2 2>&1 1>&3 )
+    # OUTPUT=$(whiptail --checklist "Please pick one" 10 60 4 $_checklist  3>&2 2>&1 1>&3 )
+    
     # checklist_out=$()
-    log_success "OUTPUT = $OUTPUT"
-    parse_checklist_output $OUTPUT;
+    # log_success "OUTPUT = $OUTPUT"
+    # parse_checklist_output $OUTPUT;
 
+    selected_scripts=(test_a vlc)
     log_success "selected_scripts = ${selected_scripts[@]}"
 
     # TODO: добавить топологическую сортировку selected_scripts!!!
     
 
+    topological_sort; 
     build_script;
     # log_success "OUTPUT = ${OUTPUT[1]}" 
     # Получаем список выбранных
@@ -216,12 +235,21 @@ main() {
     # whiptail --checklist "Please pick one" 10 60 4 one one off two two off\
     #     three three off four four off  five five off
     
-    ask_start_script;
+    # ask_start_script;
 
     # update_graph;
 
-    for K in "${!graph[@]}"; do echo $K --- ${graph[$K]}; done
+    log_debug "scripts_directory_array = ${scripts_directory_array[@]}"
 
+    log_debug "requires = "
+    for K in "${!requires[@]}"; do echo $K --- ${requires[$K]}; done
+
+    
+    log_debug "visited = "
+    for K in "${!visited[@]}"; do echo $K --- ${visited[$K]}; done
+
+    log_debug "stack = "
+    for K in "${!stack[@]}"; do echo $K --- ${stack[$K]}; done
 }
 
 if [ "${1}" != "--source-only" ]; then

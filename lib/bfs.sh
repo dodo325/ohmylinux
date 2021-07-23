@@ -27,7 +27,7 @@ reverse() {
     done
 }
 
-topological_sport() {
+topological_sort() {
     # initial array
     for v in "${V[@]}"; do
         visited[v]=false;
