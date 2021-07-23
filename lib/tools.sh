@@ -1,4 +1,4 @@
-#! /bin/bash
+#!/usr/bin/env bash
 
 reverse() {
     declare -n arr="$1" rev="$2"

@@ -1,0 +1,41 @@
+name: oh-my-linux
+help: Oh My Linux
+version: 0.1.0
+
+environment_variables:
+- name: DEBUG
+  help: Enable debug mode
+
+
+commands:
+- name: build
+  short: b
+  help: Build script
+
+  args:
+  - name: select
+    short: s
+    required: false
+    help: Selecte some scripts
+
+  flags:
+  - long: --debug
+    short: -d
+    help: Enable debug mode
+
+  - long: --no-logo
+    help: Not print logo
+
+  - long: --run
+    short: -r
+    help: Run scripn after building
+
+  - long: --sysinfo
+    help: Print System info
+
+  examples:
+  - cli build
+  - cli build -d -r 
+  - cli build "vlc GUI" 
+  - cli build --sysinfo "vlc GUI" 
+
