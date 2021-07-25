@@ -5,8 +5,8 @@
 # https://github.com/dylanaraps/neofetch
 # 
 
-distro_shorthand="off" # TODO: remove this
-# distro_shorthand="on"
+# distro_shorthand="off" # TODO: remove this
+distro_shorthand="on"
 
 trim() {
     set -f
@@ -962,6 +962,7 @@ get_pms() {
     _has swpkg      && _add
     _has apt        && _add
     _has zypper     && _add
+    _has xbps-install && _add
     _has apt-get    && _add
     _has appimaged  && {
         manager=appimage
