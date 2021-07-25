@@ -1,7 +1,7 @@
 log_info "Checking Desktop Environment"
-if [ -z "$CURRENT_DESKTOP" ]
+if [ -z "$de" ]
 then
       log_critical "Not found GUI"
 else
-      log_success "Detect $CURRENT_DESKTOP"
+      log_success "Detect DE: $de"
 fi

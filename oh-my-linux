@@ -66,10 +66,9 @@ selected_scripts=();
 _checklist=;
 
 # ==== Functions =====
-
-# 
 check_requirements() {
-  for _cmd in "${requirements[@]}"; do
+  # TODO: improve check tools
+  for _cmd in "${requirements[@]}"; do 
     if [ "$(command -v $_cmd)" ]; then
       log_success "command \"$_cmd\" exists on system"
     else
