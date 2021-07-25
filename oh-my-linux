@@ -249,7 +249,7 @@ append_new_script_dir() {
   mkdir -p $_path/
 
   echo "# $_name" > $_path/install.sh
-  echo "log_info 'Install $_name" >> $_path/install.sh 
+  echo "log_info 'Install $_name'" >> $_path/install.sh 
   echo "" >> $_path/install.sh 
 
   echo "[metadata]" > $_path/info.cfg
