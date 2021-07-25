@@ -109,6 +109,20 @@ topological_sort() {
     done
 }
 
+run_script() {
+  # USE:
+  #   run_script [SCRIPT_NAME]
+
+  local name=$1
+
+  detect_scripts_directories;
+
+  local script_file=$SCRIPTS_DIRECTORY/$name/${scripts_files[$name]}
+
+  log_info "Run $script_file"
+  source $script_file
+}
+
 parse_config_file(){
     # Parse .cfg file
     # 
@@ -120,7 +134,7 @@ parse_config_file(){
 
     local _info_file_path=$1
 
-    log_info "Srart parse $_info_file_path"
+    log_debug "Srart parse $_info_file_path"
     while read line; do
         if [[ $line =~ ^"["(.+)"]"$ ]]; then
             arrname=${BASH_REMATCH[1]}
@@ -143,6 +157,7 @@ parse_config_file(){
 }
 
 detect_scripts_directories() {
+    log_info "Start detecting scripts directories"
     scripts_directory_array=();
     scripts_files=();
     scripts_names=();
@@ -151,7 +166,6 @@ detect_scripts_directories() {
     for f in $SCRIPTS_DIRECTORY/*; do
         if [ -d "$f" ]; then
             # $f is a directory
-            log_info "info $f"
             info_file_path=$f/info.cfg;
             if [ ! -f "$info_file_path" ]; then
                 continue
@@ -168,6 +182,7 @@ detect_scripts_directories() {
             _checklist+="$dir_name $dir_name off "
         fi
     done
+    log_success "Detected: ${scripts_directory_array[@]}"
 }
 
 append_script_file_to_build() {
@@ -320,6 +335,7 @@ oh_my_linux_usage() {
   # :command.usage_commands
   printf "Commands:\n"
   echo "  build   Build script"
+  echo "  run     Run the script"
   echo
 
   if [[ -n $long_usage ]]; then
@@ -338,6 +354,54 @@ oh_my_linux_usage() {
     # :environment_variable.usage
     echo "  DEBUG"
     printf "    Enable debug mode\n"
+    echo
+
+  fi
+}
+
+
+# :command.usage
+oh_my_linux_run_usage() {
+  if [[ -n $long_usage ]]; then
+    printf "oh-my-linux run - Run the script\n"
+    echo 
+  else
+    printf "oh-my-linux run - Run the script\n"
+    echo 
+  fi
+
+  printf "Usage:\n"
+  printf "  oh-my-linux run SCRIPT [options]\n"
+  printf "  oh-my-linux run --help | -h\n"
+  echo
+
+  if [[ -n $long_usage ]]; then
+    printf "Options:\n"
+    # :command.usage_fixed_flags
+    echo "  --help, -h"
+    printf "    Show this help\n"
+    echo
+    # :command.usage_flags
+    # :flag.usage
+    echo "  --debug, -d"
+    printf "    Enable debug mode\n"
+    echo
+    
+    # :flag.usage
+    echo "  --no-logo"
+    printf "    Not print logo\n"
+    echo
+    
+    # :flag.usage
+    echo "  --sysinfo"
+    printf "    Print System info\n"
+    echo
+    # :command.usage_args
+    printf "Arguments:\n"
+    
+    # :argument.usage
+    echo "  SCRIPT"
+    printf "    Script name\n"
     echo
 
   fi
@@ -407,11 +471,34 @@ oh_my_linux_build_usage() {
   fi
 }
 
+# :command.base_parse_flags
+base_parse_flags() {
+  case "${args[--debug]}" in
+        1) DEBUG=true ;;
+        *) DEBUG=$DEBUG ;;
+  esac
+
+  if [ "${args[--no-logo]}" != 1 ]; then
+    print_logo
+  fi
+  log_debug "DEBUG Mode!"
+
+  update_all_info;
+
+  if [ "${args[--sysinfo]}" = 1 ]; then
+    print_all_info
+  fi
+
+  if [ "$DEBUG" = true ]; then
+    inspect_args
+  fi
+}
+
 # :command.inspect_args
 inspect_args() {
   readarray -t sorted_keys < <(printf '%s\n' "${!args[@]}" | sort)
   if (( ${#args[@]} )); then
-    echo args:
+    log_debug args:
     for k in "${sorted_keys[@]}"; do echo "- \${args[$k]} = ${args[$k]}"; done
   else
     echo args: none
@@ -430,22 +517,7 @@ inspect_args() {
 # :command.command_functions
 # :command.function
 oh_my_linux_build_command() {
-  # :src/build_command.sh
-  case "${args[--debug]}" in
-        1) DEBUG=true ;;
-        *) DEBUG=$DEBUG ;;
-  esac
-
-  if [ "${args[--no-logo]}" != 1 ]; then
-    print_logo
-  fi
-  log_debug "DEBUG Mode!"
-
-  update_all_info;
-
-  if [ "${args[--sysinfo]}" = 1 ]; then
-    print_all_info
-  fi
+  base_parse_flags;
 
   detect_scripts_directories;
 
@@ -454,10 +526,14 @@ oh_my_linux_build_command() {
 
   topological_sort; 
   build_script;
+}
 
-  if [ "$DEBUG" = true ]; then
-    inspect_args
-  fi
+# :command.command_functions
+# :command.function
+oh_my_linux_run_command() {
+  base_parse_flags;
+  
+  run_script "${args[script]}";
 }
 
 # :command.parse_requirements
@@ -484,7 +560,14 @@ parse_requirements() {
   case $action in
   -* )
     ;;
-  
+
+  run )
+    action="run"
+    shift
+    oh_my_linux_run_parse_requirements "$@"
+    shift $#
+    ;;
+
   build | b )
     action="build"
     shift
@@ -515,6 +598,80 @@ parse_requirements() {
       # :command.parse_requirements_case
       printf "invalid argument: %s\n" "$key"
       exit 1
+      ;;
+  
+    esac
+  done
+  # :command.default_assignments
+  # :command.whitelist_filter
+}
+
+# :command.parse_requirements
+oh_my_linux_run_parse_requirements() {
+  # :command.fixed_flag_filter
+  case "$1" in
+  --version | -v )
+    version_command
+    exit
+    ;;
+  
+  --help | -h )
+    long_usage=yes
+    oh_my_linux_run_usage
+    exit 1
+    ;;
+  
+  esac
+  # :command.environment_variables_filter
+  # :command.dependencies_filter
+  # :command.command_filter
+  action="run"
+  # :command.required_args_filter
+  if [[ $1 && $1 != -* ]]; then
+    args[script]=$1
+    shift
+  else
+    printf "missing required argument: SCRIPT\nusage: oh-my-linux run SCRIPT [options]\n"
+    exit 1
+  fi
+  # :command.required_flags_filter
+  # :command.parse_requirements_while
+  while [[ $# -gt 0 ]]; do
+    key="$1"
+    case "$key" in
+    # :flag.case
+    --debug | -d )
+      args[--debug]=1
+      shift
+      ;;
+  
+    # :flag.case
+    --no-logo )
+      args[--no-logo]=1
+      shift
+      ;;
+  
+    # :flag.case
+    --sysinfo )
+      args[--sysinfo]=1
+      shift
+      ;;
+  
+  
+    -* )
+      printf "invalid option: %s\n" "$key"
+      exit 1
+      ;;
+  
+    * )
+      # :command.parse_requirements_case
+      if [[ ! ${args[script]} ]]; then
+        args[script]=$1
+        shift
+      else
+        printf "invalid argument: %s\n" "$key"
+        exit 1
+      fi
       ;;
   
     esac
@@ -613,7 +770,15 @@ run() {
   declare -a other_args
   parse_requirements "$@"
 
-  if [[ $action == "build" ]]; then
+  if [[ $action == "run" ]]; then
+    if [[ ${args[--help]} ]]; then
+      long_usage=yes
+      oh_my_linux_run_usage
+    else
+      oh_my_linux_run_command
+    fi
+
+  elif [[ $action == "build" ]]; then
     if [[ ${args[--help]} ]]; then
       long_usage=yes
       oh_my_linux_build_usage

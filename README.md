@@ -30,12 +30,35 @@ Start script:
 
 ```
 
-# Command Line Interface:
+# Testing:
+
+## Base:
 
 ```bash
 
-   $ ./oh-my-linux
-      oh-my-linux - Oh My Linux
+   ./test.sh
+
+```
+
+## Docker:
+
+```bash
+
+   docker build -f ./docker/ubuntu -t ohmylinux .
+
+```
+
+```bash
+
+   docker run --rm -it --entrypoint bash ohmylinux
+
+```
+
+# Command Line Interface:
+
+```bash
+   
+   oh-my-linux - Oh My Linux
 
    Usage:
    oh-my-linux [command]
@@ -44,6 +67,7 @@ Start script:
 
    Commands:
    build   Build script
+   run     Run the script
 
    Options:
    --help, -h
@@ -57,11 +81,9 @@ Start script:
       Enable debug mode
 ```
 
-Build
+## Build
 
 ```bash
-
-   $ ./oh-my-linux build
 
    oh-my-linux build - Build script
 
@@ -97,4 +119,32 @@ Build
    cli build "vlc GUI"
    cli build --sysinfo "vlc GUI"
 
+```
+
+## Run
+
+```bash
+
+   oh-my-linux run - Run the script
+
+   Usage:
+   oh-my-linux run SCRIPT [options]
+   oh-my-linux run --help | -h
+
+   Options:
+   --help, -h
+      Show this help
+
+   --debug, -d
+      Enable debug mode
+
+   --no-logo
+      Not print logo
+
+   --sysinfo
+      Print System info
+
+   Arguments:
+   SCRIPT
+      Script name
 ```
