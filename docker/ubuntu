@@ -1,0 +1,7 @@
+FROM ubuntu:20.04
+
+ENV DOCKER=1
+
+WORKDIR /app
+
+COPY ./ /app/
