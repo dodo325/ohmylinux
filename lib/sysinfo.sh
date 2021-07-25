@@ -1,13 +1,67 @@
 #!/usr/bin/env bash
 
+# 
+# This script is partially borrowed from
+# https://github.com/dylanaraps/neofetch
+# 
+
 distro_shorthand="off" # TODO: remove this
 # distro_shorthand="on"
 
+trim() {
+    set -f
+    # shellcheck disable=2048,2086
+    set -- $*
+    printf '%s\n' "${*//[[:space:]]/}"
+    set +f
+}
 
 trim_quotes() {
     trim_output="${1//\'}"
     trim_output="${trim_output//\"}"
     printf "%s" "$trim_output"
+}
+
+get_ppid() {
+    # Get parent process ID of PID.
+    case $os in
+        "Windows")
+            ppid="$(ps -p "${1:-$PPID}" | awk '{printf $2}')"
+            ppid="${ppid/PPID}"
+        ;;
+
+        "Linux")
+            ppid="$(grep -i -F "PPid:" "/proc/${1:-$PPID}/status")"
+            ppid="$(trim "${ppid/PPid:}")"
+        ;;
+
+        *)
+            ppid="$(ps -p "${1:-$PPID}" -o ppid=)"
+        ;;
+    esac
+
+    printf "%s" "$ppid"
+}
+
+get_process_name() {
+    # Get PID name.
+    case $os in
+        "Windows")
+            name="$(ps -p "${1:-$PPID}" | awk '{printf $8}')"
+            name="${name/COMMAND}"
+            name="${name/*\/}"
+        ;;
+
+        "Linux")
+            name="$(< "/proc/${1:-$PPID}/comm")"
+        ;;
+
+        *)
+            name="$(ps -p "${1:-$PPID}" -o comm=)"
+        ;;
+    esac
+
+    printf "%s" "$name"
 }
 
 cache_uname() {
@@ -887,6 +941,8 @@ get_pms() {
     _has puyo       && _add
     _has snap       && _add
     _has swpkg      && _add
+    _has apt       && _add
+    _has apt-get       && _add
     _has appimaged  && {
         manager=appimage
         _add
