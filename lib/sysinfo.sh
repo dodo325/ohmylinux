@@ -960,8 +960,9 @@ get_pms() {
     _has puyo       && _add
     _has snap       && _add
     _has swpkg      && _add
-    _has apt       && _add
-    _has apt-get       && _add
+    _has apt        && _add
+    _has zypper     && _add
+    _has apt-get    && _add
     _has appimaged  && {
         manager=appimage
         _add
