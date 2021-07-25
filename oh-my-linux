@@ -34,7 +34,6 @@
 SCRIPTPATH="$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )"
 . $SCRIPTPATH/lib/logs.sh --source-only
 . $SCRIPTPATH/lib/sysinfo.sh --source-only
-. $SCRIPTPATH/lib/tools.sh
 
 
 # Build variables:
@@ -148,7 +147,7 @@ detect_scripts_directories() {
     scripts_files=();
     scripts_names=();
     scripts_description=();
-    
+
     for f in $SCRIPTS_DIRECTORY/*; do
         if [ -d "$f" ]; then
             # $f is a directory
@@ -448,6 +447,8 @@ oh_my_linux_build_command() {
     print_all_info
   fi
 
+  detect_scripts_directories;
+
   select_scripts
 
 
@@ -603,8 +604,6 @@ initialize() {
   # if [ "$DEBUG" != true ]; then # TODO: fix it!
   #   set -e  
   # fi
-
-  detect_scripts_directories;
 
 }
 
