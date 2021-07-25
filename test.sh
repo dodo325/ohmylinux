@@ -1,10 +1,21 @@
-# ! /bin/bash
+#! /bin/bash
 
 . ./oh-my-linux --source-only
 
 
 testEquality() {
   assertEquals 1 1
+}
+
+test_run_script_1() {
+  append_new_script_dir A "";
+  run_script "A"
+
+  assertTrue "[ -d '$SCRIPTS_DIRECTORY/A' ]"
+  assertTrue "[ -f '$SCRIPTS_DIRECTORY/A/info.cfg' ]"
+  assertTrue "[ -f '$SCRIPTS_DIRECTORY/A/install.sh' ]"
+  
+  remove_script_dir A;
 }
 
 test_append_and_remove_script_dir() {
