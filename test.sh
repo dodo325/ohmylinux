@@ -2,6 +2,11 @@
 
 . ./oh-my-linux --source-only
 
+if [ "$DOCKER" = 1 ]; then
+  testZSH() {
+    run_script "zsh"  
+  }
+fi
 
 testEquality() {
   assertEquals 1 1
