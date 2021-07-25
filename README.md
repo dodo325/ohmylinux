@@ -21,6 +21,13 @@ Clone repo:
    git clone https://github.com/dodo325/ohmylinux.git
 
 ```
+Or
+
+```bash
+
+   git clone --recurse-submodules https://github.com/dodo325/ohmylinux.git
+
+```
 
 Start script:
 
@@ -34,6 +41,14 @@ Start script:
 
 ## Base:
 
+Load shunit2:
+
+```bash
+
+   git submodule init; git submodule update
+
+```
+Run tests:
 ```bash
 
    ./test.sh
@@ -42,12 +57,21 @@ Start script:
 
 ## Docker:
 
+Build:
 ```bash
 
    docker build -f ./docker/ubuntu -t ohmylinux .
 
 ```
 
+Run tests:
+```bash
+
+   docker run --rm -it --entrypoint bash ohmylinux test.sh
+
+```
+
+Run Bash session:
 ```bash
 
    mkdir -p build/
