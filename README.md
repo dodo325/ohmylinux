@@ -50,7 +50,9 @@ Start script:
 
 ```bash
 
-   docker run --rm -it --entrypoint bash ohmylinux
+   mkdir -p build/
+
+   docker run --rm -v "$(pwd)"/build/:/app/build/ -it --entrypoint bash ohmylinux
 
 ```
 

@@ -35,6 +35,9 @@ SCRIPTPATH="$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )"
 . $SCRIPTPATH/lib/logs.sh --source-only
 . $SCRIPTPATH/lib/sysinfo.sh --source-only
 
+requirements=(
+  whiptail
+)
 
 # Build variables:
 BUILD_DIRECTORY=$SCRIPTPATH/build/
@@ -46,6 +49,7 @@ header_sources=(
     $SCRIPTPATH/lib/sysinfo.sh
 )
 footer_sources=()
+
 
 # Variables:
 scripts_directory_array=();
@@ -62,6 +66,19 @@ selected_scripts=();
 _checklist=;
 
 # ==== Functions =====
+
+# 
+check_requirements() {
+  for _cmd in "${requirements[@]}"; do
+    if [ "$(command -v $_cmd)" ]; then
+      log_success "command \"$_cmd\" exists on system"
+    else
+      log_warning "command \"$_cmd\" does not exist on system"
+      run_script $_cmd
+    fi
+  done
+}
+
 BFS() {
     # Breadth-First Search algorithm
     # this function adds in 'stack' all dependencies for correct script
@@ -162,6 +179,7 @@ detect_scripts_directories() {
     scripts_files=();
     scripts_names=();
     scripts_description=();
+    _checklist=;
 
     for f in $SCRIPTS_DIRECTORY/*; do
         if [ -d "$f" ]; then
@@ -286,11 +304,17 @@ build_script() {
 }
 
 ask_start_script() {
+    
     local dio_name="Statr script?"
     local dio_discription="Statr script?"
-    if (whiptail --title "$dio_name" --yesno "$dio_discription" 8 78) || []; then
+
+    if [ "${args[--run]}" = 1 ]; then
         log_info "Start script!"
-        bash $BUILD_SCRIPT;
+        source $BUILD_SCRIPT;
+
+    elif (whiptail --title "$dio_name" --yesno "$dio_discription" 8 78); then
+        log_info "Start script!"
+        source $BUILD_SCRIPT;
     else
         log_info ""
         echo "USE:"
@@ -492,6 +516,8 @@ base_parse_flags() {
   if [ "$DEBUG" = true ]; then
     inspect_args
   fi
+
+  check_requirements; # TODO: add flag for this
 }
 
 # :command.inspect_args
@@ -526,6 +552,8 @@ oh_my_linux_build_command() {
 
   topological_sort; 
   build_script;
+
+  ask_start_script;
 }
 
 # :command.command_functions

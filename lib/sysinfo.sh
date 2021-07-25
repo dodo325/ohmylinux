@@ -22,6 +22,25 @@ trim_quotes() {
     printf "%s" "$trim_output"
 }
 
+get_sudo() {
+    # OUTPUT:
+    # - is_sudo
+    # - is_root
+    # - isu
+
+    # TODO: test for different os
+    is_sudo=false
+    is_root=false
+    isu="sudo";
+    if [ "$(id -u)" = 0 ]; then
+        is_sudo=true;
+        is_root=true;
+        isu="";
+    elif sudo -n true 2>/dev/null; then
+        is_sudo=true;
+    fi
+}
+
 get_ppid() {
     # Get parent process ID of PID.
     case $os in
@@ -980,6 +999,7 @@ update_all_info() {
     get_shell
     get_model
     get_pms
+    get_sudo
 }
 
 print_all_info() {
@@ -1008,8 +1028,11 @@ print_all_info() {
     echo "- model:          $model"
     echo "- manufacturer:   $manufacturer"
 
-    echo "- pms:       ${pms[@]}"
-    echo "- pms_string: $pms_string"
+    echo "- pms:            ${pms[@]}"
+    echo "- pms_string:     $pms_string"
+
+    echo "- is_sudo:        $is_sudo"
+    echo "- is_root:        $is_root"
 }
 
 main() {                                # skip
