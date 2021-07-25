@@ -1,5 +1,7 @@
 #!/bin/bash
 
+DEBUG=${DEBUG:-false}
+
 _e="\e[0m"
 _r="\e[1;49;91m"
 _o="\e[1;49;93m"
@@ -32,7 +34,7 @@ _time()       { echo $(date +"%T.%3N"); }
 log_info()    { echo -e "$_lb($(_time))[INFO] $@ $_e"; }
 log_success() { echo -e "$_lg($(_time))[ OK ] $@ $_e"; }
 log_warning() { echo -e "$_ly($(_time))[WARN] $@ $_e"; }
-log_debug()   { echo -e "$_ld($(_time))[    ] $@ $_e"; }
+log_debug()   { if [ "$DEBUG" = true ]; then echo -e "$_ld($(_time))[    ] $@ $_e"; fi;}
 log_error()   { echo -e "$_lr($(_time))[FAIL] $@ $_e"; }
 
 main() {                               # skip
