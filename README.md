@@ -1,6 +1,8 @@
 # Oh my Linux!
 Setting up your linux is easy!
 
+[![asciicast](https://asciinema.org/a/427128.svg)](https://asciinema.org/a/427128)
+
 # Getting Started
 
 ## Prerequisites
