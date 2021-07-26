@@ -47,6 +47,7 @@ SCRIPTS_DIRECTORY=$SCRIPTPATH/scripts
 header_sources=(
     $SCRIPTPATH/lib/logs.sh
     $SCRIPTPATH/lib/sysinfo.sh
+    $SCRIPTPATH/lib/header.sh
 )
 footer_sources=()
 
