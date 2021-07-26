@@ -34,6 +34,8 @@
 SCRIPTPATH="$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )"
 . $SCRIPTPATH/lib/logs.sh --source-only
 . $SCRIPTPATH/lib/sysinfo.sh --source-only
+. $SCRIPTPATH/lib/tools.sh
+
 
 requirements=(
   whiptail
@@ -47,6 +49,7 @@ SCRIPTS_DIRECTORY=$SCRIPTPATH/scripts
 header_sources=(
     $SCRIPTPATH/lib/logs.sh
     $SCRIPTPATH/lib/sysinfo.sh
+    $SCRIPTPATH/lib/header.sh
 )
 footer_sources=()
 
@@ -56,6 +59,7 @@ scripts_directory_array=();
 declare -A scripts_files=();
 declare -A scripts_names=();
 declare -A scripts_description=();
+declare -A scripts_text_assets=();
 
 declare -A depends_on=();
 declare -A visited=();
@@ -165,11 +169,13 @@ parse_config_file(){
     scripts_description[$2]=${metadata[description]};
     scripts_names[$2]=${metadata[name]};
     depends_on[$2]=${metadata[depends_on]};
-    
+    scripts_text_assets[$2]=${assets[text_assets]};
+
     log_debug "name = ${metadata[name]}";
     log_debug "description = ${metadata[description]}";
     log_debug "file = ${metadata[file]}";
     log_debug "depends_on [$2] = ${metadata[depends_on]}";
+    log_debug "scripts_text_assets [$2] = ${assets[text_assets]}";
 }
 
 detect_scripts_directories() {
@@ -202,16 +208,24 @@ detect_scripts_directories() {
     log_success "Detected: ${scripts_directory_array[@]}"
 }
 
+append_script_assets_to_build() {
+    log_info "scripts_text_assets = ${scripts_text_assets[$1]}"
+    if [ -n "${scripts_text_assets[$1]}" ]; then
+        log_debug "add asseets:"
+        local text_assets=(${scripts_text_assets[$1]})
+        for asset in "${text_assets[@]}"; do
+            log_debug "Add $asset";
+            append_text_file_to_bash_script $SCRIPTS_DIRECTORY/$name/$asset $BUILD_SCRIPT;
+        done
+    fi
+}
+
 append_script_file_to_build() {
-    log_info "Add script: $1"
+    log_info "Add script to build: $1"
     content=$(cat $1)
     # TODO: repere the script content
 
-    echo "$content" >> $BUILD_SCRIPT
-        # Для каждого файла мы обрезаем контент
-        # добавляем в выхдной файл 
-        # добавляем папку с ресурсами
-    
+    echo "$content" >> $BUILD_SCRIPT    
 }
 
 parse_checklist_output() {
@@ -289,7 +303,7 @@ build_script() {
         log_info "Add script = $name"
         local script_file=$SCRIPTS_DIRECTORY/$name/${scripts_files[$name]}
         log_info "script_file = $script_file"
-
+        append_script_assets_to_build $name;
         append_script_file_to_build "$script_file";
     done
 
