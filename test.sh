@@ -2,11 +2,20 @@
 
 . ./oh-my-linux --source-only
 
-if [ "$DOCKER" = 1 ]; then
-  testZSH() {
-    run_script "zsh"  
-  }
-fi
+# if [ "$DOCKER" = 1 ]; then
+#   testZSH() {
+#     run_script "zsh"
+#   }
+# fi
+
+script_builder () {
+  base_parse_flags
+
+	detect_scripts_directories
+
+	topological_sort
+	build_script
+}
 
 testEquality() {
   assertEquals 1 1
@@ -19,7 +28,7 @@ test_run_script_1() {
   assertTrue "[ -d '$SCRIPTS_DIRECTORY/A' ]"
   assertTrue "[ -f '$SCRIPTS_DIRECTORY/A/info.cfg' ]"
   assertTrue "[ -f '$SCRIPTS_DIRECTORY/A/install.sh' ]"
-  
+
   remove_script_dir A;
 }
 
@@ -41,7 +50,7 @@ test_append_and_remove_script_dir() {
   remove_script_dir B;
   assertTrue "[ ! -d '$SCRIPTS_DIRECTORY/A' ]"
   assertTrue "[ ! -d '$SCRIPTS_DIRECTORY/B' ]"
-  
+
 }
 
 test_detect_scripts_directories() {
@@ -98,5 +107,44 @@ test_initial_build_directory(){
   assertTrue "[ -d '$BUILD_DIRECTORY' ]"
   assertTrue "[ -f '$BUILD_SCRIPT' ]"
 }
+
+test_append_text_file_to_bash_script1() {
+  # run_script
+  append_new_script_dir AA "";
+  echo "" >> $SCRIPTS_DIRECTORY/AA/info.cfg
+  echo "[assets]" >> $SCRIPTS_DIRECTORY/AA/info.cfg
+  echo "text_assets=info.cfg" >> $SCRIPTS_DIRECTORY/AA/info.cfg
+  run_script "AA"
+  assertTrue "[ -f './info.cfg' ]"
+  local a_s=$(cat $SCRIPTS_DIRECTORY/AA/info.cfg)
+  local b_s=$(cat ./info.cfg)
+  assertEquals "$a_s" "$b_s"
+
+  remove_script_dir AA;
+  rm ./info.cfg
+}
+
+# test_append_text_file_to_bash_script2() {
+#   # run_script
+#   append_new_script_dir AA "";
+#   echo "" >> $SCRIPTS_DIRECTORY/AA/info.cfg
+#   echo "[assets]" >> $SCRIPTS_DIRECTORY/AA/info.cfg
+#   echo "text_assets=info.cfg" >> $SCRIPTS_DIRECTORY/AA/info.cfg
+
+
+
+#   assertTrue "[ -f './info.cfg' ]"
+#   local a_s=$(cat $SCRIPTS_DIRECTORY/AA/info.cfg)
+#   local b_s=$(cat ./info.cfg)
+#   assertEquals "$a_s" "$b_s"
+
+#   selected_scripts=("AA")
+#   script_builder
+#   log_info "Start script!"
+#   source $BUILD_SCRIPT
+
+#   remove_script_dir AA;
+#   rm ./info.cfg
+# }
 
 . ./shunit2/shunit2

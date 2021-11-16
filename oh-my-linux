@@ -41,6 +41,7 @@ SCRIPTPATH="$(
 
 requirements=(
 	whiptail
+	base64
 )
 
 # Build variables:
@@ -130,6 +131,18 @@ topological_sort() {
 	done
 }
 
+copy_assets() {
+	log_info "scripts_text_assets = ${scripts_text_assets[$1]}"
+	if [ -n "${scripts_text_assets[$1]}" ]; then
+		log_debug "Copy asseets:"
+		local text_assets=(${scripts_text_assets[$1]})
+		for asset in "${text_assets[@]}"; do
+			log_debug "Copy $asset"
+			cp $SCRIPTS_DIRECTORY/$name/$asset ./
+		done
+	fi
+}
+
 run_script() {
 	# USE:
 	#   run_script [SCRIPT_NAME]
@@ -141,6 +154,7 @@ run_script() {
 	local script_file=$SCRIPTS_DIRECTORY/$name/${scripts_files[$name]}
 
 	log_info "Run $script_file"
+	copy_assets $name
 	source $script_file
 }
 
@@ -216,6 +230,7 @@ append_script_assets_to_build() {
 		local text_assets=(${scripts_text_assets[$1]})
 		for asset in "${text_assets[@]}"; do
 			log_debug "Add $asset"
+			echo "log_info 'Import $asset asset file'" >> $BUILD_SCRIPT
 			append_text_file_to_bash_script $SCRIPTS_DIRECTORY/$name/$asset $BUILD_SCRIPT
 		done
 	fi
