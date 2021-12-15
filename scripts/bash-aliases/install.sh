@@ -1,6 +1,6 @@
 log_info 'Install bash-aliases'
 
-mv .aliases.sh ~/.bash_aliases
+mv aliases.sh ~/.bash_aliases
 
 if [ -f ~/.zshrc ]; then
   log_info "Detect .zshrc"
