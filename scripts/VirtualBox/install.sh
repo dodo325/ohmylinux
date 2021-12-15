@@ -3,7 +3,8 @@ log_info 'Install VirtualBox'
 
 install_Extension_Pack() {
     log_info 'Installing VirtualBox Extension Pack'
-    local last_url=$(curl -s https://www.virtualbox.org/wiki/Downloads | grep -oP "https:\/\/.+VirtualBox_Extension_Pack.+\.vbox-extpack")
+    local vb_ver=$(vboxmanage --version | grep -oP "[\d|\.]+(?=_)")
+    local last_url=https://download.virtualbox.org/virtualbox/$vb_ver/Oracle_VM_VirtualBox_Extension_Pack-$vb_ver.vbox-extpack
     local _file_name=$(basename $last_url)
 
     curl $last_url --output $_file_name
